@@ -1,0 +1,13 @@
+:root {
+  --primary-color: #4e73df;
+  --secondary-color: #f6c23e;
+  --bg-color: #f8f9fc;
+  --text-color: #5a5c69;
+  --border-radius: 8px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--bg-color);
+}

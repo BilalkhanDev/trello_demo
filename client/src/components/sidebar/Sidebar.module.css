@@ -1,0 +1,126 @@
+/* Sidebar styles */
+.sidebar {
+  position: fixed;
+  top: 10;
+  left: 0;
+  height: 89vh;
+  background-color: var(--accent-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: width 0.3s ease-in-out;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.sidebar.open {
+  width: 220px;
+}
+
+.sidebar.closed {
+  width: 70px;
+}
+
+.menu {
+  list-style: none;
+  margin: 0;
+  padding: 20px 0;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  color: white;
+  white-space: nowrap;
+}
+
+.menu li a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.menu li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu li.active {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: var(--border-radius);
+}
+
+.toggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+}
+
+.bottomButton {
+  padding: 16px;
+}
+
+/* Custom collapsible li styles */
+.customCollapseLi {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.customCollapseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0px;
+  cursor: pointer;
+  color: white;
+  background-color: var(--accent-color);
+  transition: background-color 0.3s ease;
+}
+
+.customCollapseHeader:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.collapseIcon {
+  transition: transform 0.3s ease-in-out;
+}
+
+.collapseIcon.open {
+  transform: rotate(180deg);
+}
+
+.customSubMenu {
+  background-color: var(--accent-color);
+  margin: 20px;
+  display: block; /* Ensure the sub-menu is a block */
+  width: 100%;
+  border-left: 1px solid white;
+}
+
+.subMenuItem {
+  margin-left:-30px !important;
+  display: block !important;
+  color: white;
+
+}
+
+.subMenuItem a {
+  color: #1890ff;
+  display: block !important;
+  text-decoration: none;
+}
+
+/* .subMenuItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+} */

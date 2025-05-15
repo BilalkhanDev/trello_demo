@@ -1,0 +1,41 @@
+/* .main {
+  margin-left: 220px;
+  margin-top: 60px;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  padding: 2rem;
+  background-color: var(--background-color);
+} */
+
+/* Ensure the body doesn’t scroll */
+body, html, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  margin-left: 220px; /* default */
+  transition: margin-left 0.3s ease-in-out;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  background-color: var(--light-bg);
+}
+
+/* Optional: keep footer at bottom */
+.footer {
+  flex-shrink: 0;
+}

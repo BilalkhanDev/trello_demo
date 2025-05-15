@@ -1,0 +1,31 @@
+/* AdminBoard.module.css */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--primary-color);
+  padding: 16px 24px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.headerTitle {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.custom_table {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.custom_table :global(.ant-table-thead > tr > th) {
+  background-color: var(--accent-color); /* or any color like #f0f2f5 */
+  color: white; /* or any contrasting text color */
+  font-weight: 600;
+}

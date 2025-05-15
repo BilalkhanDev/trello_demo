@@ -1,0 +1,20 @@
+.navbar {
+  height: 60px;
+  background-color: var(--accent-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.user {
+  cursor: pointer;
+  font-size: 1.2rem;
+}

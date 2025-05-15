@@ -1,0 +1,42 @@
+/* Header Section (unchanged from before) */
+.headerContainer {
+  background: radial-gradient(circle at top left, #042648, #007cf0);
+  padding: 80px 20px 120px;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.headerContent {
+  z-index: 2;
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: bold;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #d0e0ff;
+  margin-top: 12px;
+}
+
+/* Decorative SVG wave */
+.headerContainer::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: url("/client/public/assets/dashboard.png") !important;
+  background-size: cover;
+}

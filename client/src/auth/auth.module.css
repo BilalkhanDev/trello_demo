@@ -1,0 +1,44 @@
+
+
+.wrapper {
+  display: flex;
+  min-height: 100vh;
+  font-family: var(--font-main);
+}
+
+.leftImage {
+  flex: 1;
+  background: url('/assets/formLogo.png') center center / cover no-repeat;
+  display: none;
+}
+
+.rightForm {
+  flex: 1;
+  background-color: var(--light-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+}
+
+.formContainer {
+  background: var(--form-bg);
+  padding: 2rem 3rem;
+  border-radius: var(--border-radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 400px;
+}
+
+.title {
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+/* Responsive */
+@media screen and (min-width: 768px) {
+  .leftImage {
+    display: block;
+  }
+}
