@@ -10,42 +10,8 @@ const useAuth = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);  // Access user from Redux store
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem('token'); // Retrieve the token from localStorage
-    
-  //   if (token) {
-  //     try {
-  //       const decodedToken = jwtDecode(token);
-  //       const currentTime = Date.now() / 1000; // Current time in seconds
-
-  //       if (decodedToken.exp && decodedToken.exp > currentTime) {
-  //         setIsAuthenticated(true);
-
-  //         // Only call authUser if there is no user in Redux state
-  //         if (!user) {
-  //           const resp=authUser();
-  //           console.log("RESP", resp)  // Call the authUser service
-  //           if(resp){
-  //             dispatch(setUser(resp))
-  //           }
-  //         }
-  //       } else {
-  //         localStorage.removeItem('token');
-  //         setIsAuthenticated(false);
-  //       }
-  //     } catch (error) {
-  //       // If decoding the token fails, remove it from localStorage and set isAuthenticated to false
-  //       localStorage.removeItem('token');
-  //       setIsAuthenticated(false);
-  //     }
-  //   } else {
-  //     setIsAuthenticated(false);
-  //   }
-
-  //   setLoading(false); // Once the check is done, stop loading
-  // }, [dispatch, user]);  // Add user as dependency to re-check whenever the user changes
-
-  useEffect(() => {
+ 
+ useEffect(() => {
   const token = sessionStorage.getItem('token');
 
 

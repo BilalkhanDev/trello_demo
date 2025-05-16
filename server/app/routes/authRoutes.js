@@ -1,6 +1,6 @@
 const express = require('express');
 const reqValidator = require('../midlwares/validator');
-const { signup, signin } = require('../controller/authController');
+const { signup, signin, refreshAccessToken } = require('../controller/authController');
 const { useAuth } = require('../midlwares/useAuth');
 const { authUser } = require('../controller/userController');
 const router = express.Router();
@@ -18,6 +18,8 @@ router.get('/me',
     useAuth,
     authUser
 );
+
+router.post('/refresh-token', refreshAccessToken);
 
 
 

@@ -7,13 +7,22 @@ import styles from './../auth.module.css';
 import { Link, useNavigate } from 'react-router-dom';
 import { loginUser } from '../../services/userServices';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 const Login = () => {
   const navigate=useNavigate()
+  const user=useSelector((state)=>state.user.user)
   const validationSchema = Yup.object({
     email: Yup.string().email('Invalid email').required('Required'),
     password: Yup.string().min(6).required('Required'),
   });
+
+  useEffect(()=>{
+     if(user && user?._id){
+      navigate("/dashboard")
+     }
+  },[user])
   const handleLogin = async (values, { resetForm }) => {
 
     try {

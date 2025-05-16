@@ -6,85 +6,131 @@ const {
   getSortedTicketsService
 } = require('../services/ticketServices');
 const { getIO, getConnectedUsers } = require('../config/sockets');
+const ticketModel = require('../model/ticketModel')
+
 exports.createTicket = async (req, res) => {
   try {
-    const ticket = await createTicketService(req);
+    const ticket = await createTicketService(req); // Save ticket logic
 
     const io = getIO();
     const connectedUsers = getConnectedUsers();
 
     if (ticket?.assignedTo) {
-      const assignedToId = ticket.assignedTo?._id; // ensure it's a string
+      const assignedToId = ticket.assignedTo?._id?.toString(); // Ensure it's string
+      const userSocket = connectedUsers[assignedToId];
 
-      const socketId = connectedUsers[assignedToId];
-      if (socketId) {
-        io.to(socketId).emit("ticketAssigned", {
+      if (userSocket?.socketId) {
+        io.to(userSocket.socketId).emit("ticketAssigned", {
           message: "A new ticket has been assigned to you",
           ticket,
         });
+        console.log("📤 Emitted ticketAssigned to:", userSocket.socketId);
+      } else {
+        console.log("⚠️ Assigned user not connected");
       }
     }
 
     res.status(201).json(ticket);
-  } catch (err) {
-    console.log("Error creating ticket:", err);
-    res.status(400).json({ error: err.message });
+  } catch (error) {
+    console.error("❌ Ticket creation error:", error);
+    res.status(400).json({ error: error.message });
   }
 };
 
 
 exports.updateTicket = async (req, res) => {
   try {
+    const user = req.user;
+    const ticketId = req.params.id;
+    if (Array.isArray(req.body)) {
+      await Promise.all(req.body.map(ticket =>
+        ticketModel.findByIdAndUpdate(ticket.id, { order: ticket.order })
+      ));
+      return res.status(200).json({ message: "Order updated" });
+    }
+
+
+    const existingTicket = await ticketModel.findById(ticketId);
+    if (!existingTicket) {
+      return res.status(404).json({ error: 'Ticket not found' });
+    }
+
+    const oldAssignedTo = existingTicket.assignedTo?.toString();
+    const oldStatus = existingTicket.status;
+
     const updated = await updateTicketService(req);
+    const updatedTicket = updated?.updatedTicket;
+    const newAssignedTo = updatedTicket?.assignedTo?.toString();
+
+    const io = getIO();
+    const connectedUsers = getConnectedUsers();
+
+    // ✅ Admin logic for assignedTo + status
+    if (user?.role === 1) {
+      if (newAssignedTo !== oldAssignedTo) {
+        const newSocket = connectedUsers[newAssignedTo]?.socketId;
+        const oldSocket = connectedUsers[oldAssignedTo]?.socketId;
+
+        if (newSocket) {
+          io.to(newSocket).emit("ticketAssigned", {
+            ticketId,
+            message: "You have been assigned a new ticket.",
+            ticket: updated
+          });
+        }
+
+        if (oldSocket) {
+          io.to(oldSocket).emit("ticketUnassigned", {
+            ticketId,
+            message: "You have been unassigned from a ticket.",
+            ticket: updated
+          });
+        }
+      }
+
+      if (updatedTicket.status !== oldStatus) {
+        const assignedSocket = connectedUsers[newAssignedTo]?.socketId;
+        if (assignedSocket) {
+          io.to(assignedSocket).emit("ticketStatusUpdated", {
+            ticketId,
+            newStatus: updatedTicket.status,
+            ticket: updated
+          });
+        }
+      }
+    }
+
+    // ✅ User logic — only emit status updates
+    if (user?.role !== 1 && updatedTicket.status !== oldStatus) {
+      const assignedSocket = connectedUsers[newAssignedTo]?.socketId;
+      if (assignedSocket) {
+        io.to(assignedSocket).emit("ticketStatusUpdated", {
+          ticketId,
+          newStatus: updatedTicket.status,
+          ticket: updated
+        });
+      }
+
+      // 👇 ALSO notify all admins about status change
+      Object.entries(connectedUsers).forEach(([uid, userData]) => {
+        if (userData.role === 1) {
+          io.to(userData.socketId).emit("ticketStatusUpdated", {
+            ticketId,
+            newStatus: updatedTicket.status,
+            ticket: updated
+          });
+        }
+      });
+    }
+
     res.status(200).json(updated);
   } catch (err) {
-    console.log("Error",err)
+    console.error("Error", err);
     res.status(400).json({ error: err.message });
   }
 };
 
-// exports.updateTicket = async (req, res) => {
-//   try {
-//     const { ticket, oldMembers } = await updateTicketService(req);
-//     const newMembers = req.body.members;
 
-//     const io = getIO();
-//     const connectedUsers = getConnectedUsers();
-
-//     if (Array.isArray(newMembers)) {
-//       // Compare sets
-//       const removedMembers = oldMembers.filter(id => !newMembers.includes(id));
-//       const addedMembers = newMembers.filter(id => !oldMembers.includes(id));
-
-//       // Emit to removed users
-//       removedMembers.forEach(userId => {
-//         const socketId = connectedUsers[userId];
-//         if (socketId) {
-//           io.to(socketId).emit("ticketUnassigned", {
-//             message: "You were unassigned from a ticket",
-//             ticketId: ticket._id,
-//           });
-//         }
-//       });
-
-//       // Emit to added users
-//       addedMembers.forEach(userId => {
-//         const socketId = connectedUsers[userId];
-//         if (socketId) {
-//           io.to(socketId).emit("ticketAssigned", {
-//             message: "You were assigned to a ticket",
-//             ticket,
-//           });
-//         }
-//       });
-//     }
-
-//     res.status(200).json(ticket);
-//   } catch (err) {
-//     console.log("Error", err);
-//     res.status(400).json({ error: err.message });
-//   }
-// };
 exports.deleteTicket = async (req, res) => {
   try {
     await deleteTicketService(req);

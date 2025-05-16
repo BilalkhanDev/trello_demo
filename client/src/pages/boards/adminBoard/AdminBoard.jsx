@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Tag, Tooltip } from 'antd';
+import { Popconfirm, Table, Tag, Tooltip } from 'antd';
 import dayjs from 'dayjs';
 import styles from './AdminBoard.module.css';
 import { useParams } from "react-router-dom";
@@ -8,24 +8,24 @@ import { useDispatch, useSelector } from "react-redux";
 import { addTicket, setTicket, updateTicket } from "../../../store/slices/ticketSlice";
 import { createTicket, fetchTickets, updateTickets } from "../../../services/ticketServices";
 import { toast } from "react-toastify";
-import { EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import CustomButton from "../../../common/button/Button";
 import { Constant } from "../../../constants";
 import CustomModal from "../../../common/modal/Modal";
 import TicketForm from "../../tickets/createTicket/createTicket";
-import { fetchUsers } from "../../../services/userServices";
 import BoardForm from "../createBoard/createBoard";
-import { updateBoard } from "../../../services/boardServices";
-import { setUser } from "../../../store/slices/userSlice";
+import { deleteBoard, fetchBoard, updateBoard } from "../../../services/boardServices";
+import { addBoard } from "../../../store/slices/boardSlice";
 
 const AdminBoard = (props) => {
+ 
   const { status, priority } = Constant();
-  const {boardId}=useParams()
+  const { boardId } = useParams()
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const tickets = useSelector((state) => state.tickets?.tickets || []);
-  const allUsers=useSelector((state) => state.user.allUsers || []);
+  const allUsers = useSelector((state) => state.user.allUsers || []);
   const user = useSelector((state) => state.user.user);
   const [isboardOpen, setIsBoardOpen] = useState(false);
 
@@ -34,65 +34,50 @@ const AdminBoard = (props) => {
   };
 
   const handleModalClose = () => {
-      setIsBoardOpen(true);
+    setIsBoardOpen(true);
   };
 
-  // const fetchAllUser=async()=>{
-  //   const response=await fetchUsers()
-  //   if(response){
-  //      dispatch(setUser(response.data?.users))
-  //   }
-  // }
-
-  // useEffect(()=>{
-  // if(user && user?.role==1){
-  //   fetchAllUser()
-  // }
-  // },[])
-
-
- const handleFormSubmit = async (data) => {
+  const handleFormSubmit = async (data) => {
     const assignedUser = allUsers.find(user => user._id == data.assignedTo);
     try {
       if (data.id) {
-        const payload={
-        title: data?.title,
-        description: data?.description,
-        status: data?.status,
-        assignedTo:data?.assignedTo,
-        priority: data?.priority,
+        const payload = {
+          title: data?.title,
+          description: data?.description,
+          status: data?.status,
+          assignedTo: data?.assignedTo,
+          priority: data?.priority,
         }
         await updateTickets(data.id, payload);
-        const updatePayload={
-        _id:data?.id,
-        title: data?.title,
-        description: data?.description,
-        status: data?.status,
-        assignedTo:assignedUser,
-        priority: data?.priority,
+        const updatePayload = {
+          _id: data?.id,
+          title: data?.title,
+          description: data?.description,
+          status: data?.status,
+          assignedTo: assignedUser,
+          priority: data?.priority,
         }
         console.log(updatePayload)
         dispatch(updateTicket(updatePayload))
         toast.success('Ticket updated!');
       } else {
-       const resp= await createTicket(props?.boardId || boardId ,data);
-         dispatch(addTicket(resp))
-        
+        const resp = await createTicket(props?.boardId || boardId, data);
+        dispatch(addTicket(resp))
         toast.success('Ticket created!');
       }
-    
+
     } catch (error) {
       toast.error(error?.message || 'Error submitting ticket');
     }
   };
-   const handleBoardSubmit = async (data) => {
+  const handleBoardSubmit = async (data) => {
     try {
-        await updateBoard(props?.boardId || boardId ,data);
-        await props.fetchBoards()
-         dispatch(addTicket(resp))
-        
-        toast.success('Board updated!');
-      
+      const resp = await updateBoard(props?.boardId || boardId, data);
+      await props.fetchBoards()
+      dispatch(addBoard(resp))
+
+      toast.success('Board updated!');
+
     } catch (error) {
       toast.error(error?.message || 'Error updating board');
     }
@@ -165,29 +150,47 @@ const AdminBoard = (props) => {
       dataIndex: 'actions',
       key: 'actions',
       responsive: ['xs', 'sm', 'md', 'lg'],
-      render: (_,item) => (
-        <CustomButton htmlType="button" variant="primary" block onClick={()=>handleEdit(item)}>
+      render: (_, item) => (
+        <CustomButton htmlType="button" variant="primary" block onClick={() => handleEdit(item)}>
           Edit
         </CustomButton>
       ),
     },
   ];
+  const handleDeleteBoard=async()=>{
+    try{
+    const resp= await deleteBoard(boardId)
+     if(resp){
+     const updatedData= await props.fetchBoards()
+      dispatch(addBoard(updatedData?.boards))
+      toast.success("Board Deleted")
+     }
+    }
+    catch(err){
+      toast.error(err?.message || "Failed to delete")
+    }
 
+  }
   return (
     <Layout>
       <div className={styles.header}>
-        <h2 className={styles.headerTitle}>{props?.BoardData?.title || ""}
-          {user && user?.role ==1 &&
-           <Tooltip title="Edit board">
-            {" "}
-          <EditOutlined
-            className={styles.editIcon}
-            onClick={handleEditClick}
-          />
-        </Tooltip>}
-         
+        <h2 className={styles.headerTitle}>
+          {props?.BoardData?.title || ""}
+          {user?.role === 1 && (
+            <Tooltip title="Edit board">
+              <EditOutlined
+                className={styles.editIcon}
+                onClick={handleEditClick}
+              />
+            </Tooltip>
+          )}
         </h2>
-        <CustomButton htmlType="button" variant="secondary" onClick={()=>setOpen(true)}>
+
+        <CustomButton
+          htmlType="button"
+          variant="secondary"
+          onClick={() => setOpen(true)}
+        >
           Create Ticket
         </CustomButton>
       </div>
@@ -201,8 +204,8 @@ const AdminBoard = (props) => {
         className={styles.custom_table}
       />
 
-      {/* for Ticket  */}
-        <CustomModal
+      {/* Ticket Modal */}
+      <CustomModal
         visible={open}
         onClose={() => {
           setOpen(false);
@@ -220,24 +223,37 @@ const AdminBoard = (props) => {
         />
       </CustomModal>
 
-      {/* for board */}
+      {/* Board Edit Modal */}
       <CustomModal
         visible={isboardOpen}
-        onClose={() => {
-          setIsBoardOpen(false);
-          
-        }}
-        title={"Update Board"}
+        onClose={() => setIsBoardOpen(false)}
+        title="Update Board"
       >
         <BoardForm
           initialData={props?.BoardData || {}}
-          onClose={() => {
-            setIsBoardOpen(false);
-           
-          }}
+          onClose={() => setIsBoardOpen(false)}
           onSubmit={handleBoardSubmit}
         />
       </CustomModal>
+
+      {/* Floating Delete Button */}
+      {user?.role === 1 && (
+        <Popconfirm
+          title="Are you sure you want to delete this board?"
+          description="This action cannot be undone."
+          onConfirm={handleDeleteBoard}
+          okText="Yes, Delete"
+          cancelText="Cancel"
+          placement="top"
+        >
+          
+            <button className={styles.floatingDeleteButton}>
+              <DeleteOutlined />
+            </button>
+       
+        </Popconfirm>
+      )}
+
     </Layout>
   );
 };

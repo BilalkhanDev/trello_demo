@@ -7,10 +7,12 @@ import styles from './../auth.module.css';
 import { Link, redirect, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { registerUser } from '../../services/userServices';
+import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 const SignUp = () => {
  const navigate=useNavigate()
-const validationSchema = Yup.object({
+ const validationSchema = Yup.object({
   username: Yup.string().required('Required'),
   email: Yup.string().email('Invalid email').required('Required'),
   password: Yup.string().min(6, 'Password must be at least 6 characters').required('Required'),
@@ -18,7 +20,13 @@ const validationSchema = Yup.object({
     .oneOf([Yup.ref('password'), null], 'Passwords must match')
     .required('Required'),
 });
-
+  const user=useSelector((state)=>state.user.user)
+ 
+  useEffect(()=>{
+     if(user && user?._id){
+      navigate("/dashboard")
+     }
+  },[user])
  const handleRegister = async (values, { resetForm }) => {
 
     try {

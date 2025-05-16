@@ -25,8 +25,20 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const board= useSelector((state) => state.boards.boards); 
   const [listOpen, setListOpen] = useState(false);
 
+
+  // Automatically open board submenu if current route matches /boards/:id
+  useEffect(() => {
+    if (location.pathname.startsWith('/boards/')) {
+      setListOpen(true);
+    }
+  }, [location.pathname]);
+
+
 useEffect(() => {
-}, [board]);  
+   if(!isOpen){
+    setListOpen(false)
+   }
+}, [isOpen]);  
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
@@ -75,52 +87,58 @@ const handleBoardSubmit=async(data)=>{
   return (
     <>
       <nav className={`${styles.sidebar} ${isOpen ? styles.open : styles.closed}`}>
-        <div className={styles.toggleButton} onClick={toggleSidebar}>
-          {isOpen ? <CloseOutlined /> : <MenuOutlined />}
-        </div>
+      <div className={styles.toggleButton} onClick={toggleSidebar}>
+        {isOpen ? <CloseOutlined /> : <MenuOutlined />}
+      </div>
 
-        <ul className={styles.menu}>
-          <li className={location.pathname === '/dashboard' ? styles.active : ''}>
-            <DashboardOutlined />
-            {isOpen && <Link to="/dashboard">Dashboard</Link>}
-          </li>
-          <li className={location.pathname === '/profile' ? styles.active : ''}>
-            <UserOutlined />
-            {isOpen && <Link to="/dashboard">Profile</Link>}
-          </li>
+      <ul className={styles.menu}>
+        <li className={location.pathname === '/dashboard' ? styles.active : ''}>
+          <DashboardOutlined />
+          {isOpen && <Link to="/dashboard">Dashboard</Link>}
+        </li>
 
-          {/* Custom collapsible menu for Boards */}
-          <li className={styles.customCollapseLi} onClick={handleNestedToggle}>
-            <AppstoreAddOutlined className={`${styles.collapseIcon} ${listOpen ? styles.open : ''}`} />
-            {isOpen && "Boards"}
-          </li>
-        
-              {listOpen && (
-              <ul className={styles.customSubMenu}>
-                {board && board?.length >=1 && board?.map((item, index) => (
-                  <li key={index} className={styles.subMenuItem}>
-                    <Link to={`/boards/${item.id}`}>{item.title}</Link>
+        <li >
+          <UserOutlined />
+          {isOpen && <Link>Profile</Link>}
+        </li>
+
+        <li className={styles.customCollapseLi} onClick={handleNestedToggle}>
+          <AppstoreAddOutlined className={`${styles.collapseIcon} ${listOpen ? styles.open : ''}`} />
+          {isOpen && 'Boards'}
+        </li>
+
+        {listOpen && (
+          <ul className={styles.customSubMenu}>
+            {board?.length >= 1 ?
+              board?.map((item, index) => {
+                const isActive = location.pathname === `/boards/${item?.id}`;
+                return (
+                  <li
+                    key={index}
+                    className={`${styles.subMenuItem} ${isActive ? styles.active : ''}`}
+                  >
+                    <Link to={`/boards/${item?.id}`}>{item?.title}</Link>
                   </li>
-                ))}
-              </ul>
-            )}
-        
+                );
+              })
+            :
+             <li className={`${styles.subMenuItem}`}
+                  >
+                 No Board Yet
+                  </li>
+            }
+          </ul>
+        )}
+      </ul>
 
-          <li className={location.pathname === '/settings' ? styles.active : ''}>
-            <SettingOutlined />
-            {isOpen && <Link to="/dashboard">Settings</Link>}
-          </li>
-        </ul>
-        {
-          user&& user?.role==1 &&
-           <div className={styles.bottomButton}>
+      {user?.role === 1 && (
+        <div className={styles.bottomButton}>
           <CustomButton htmlType="submit" variant="primary" block onClick={() => setOpen(true)}>
             {isOpen ? 'Create Board' : <PlusIcon />}
           </CustomButton>
         </div>
-        }
-       
-      </nav>
+      )}
+    </nav>
 
       <CustomModal visible={open} onClose={() => setOpen(false)} title="Create Board">
         <BoardForm onClose={() => setOpen(false)}     onSubmit={handleBoardSubmit} />

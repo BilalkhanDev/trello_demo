@@ -67,14 +67,14 @@ const TicketForm = ({ onClose, onSubmit, initialData = {} }) => {
         title: initialData?.title || '',
         description: initialData?.description || '',
         assignedTo: initialData?.assignedTo?._id || initialData?.assignedTo?.id || '',
-        priority: initialData?.priority || '',
-        status: initialData?.status || '',
+        status: typeof initialData?.status === 'number' ? initialData.status : Number(initialData?.status) || '',
+        priority: typeof initialData?.priority === 'number' ? initialData.priority : Number(initialData?.priority) || '',
       }}
       validationSchema={validationSchema}
-      onSubmit={(values,action) => {
+      onSubmit={(values, action) => {
         const payload = initialData?._id ? { ...values, id: initialData._id } : values;
         onSubmit(payload);
-        action.resetForm(); 
+        action.resetForm();
         onClose();
       }}
     >
@@ -131,7 +131,7 @@ const TicketForm = ({ onClose, onSubmit, initialData = {} }) => {
           />
 
           <div className={styles.buttonGroup}>
-            <CustomButton htmlType="submit"  variant="primary">
+            <CustomButton htmlType="submit" variant="primary">
               Submit
             </CustomButton>
             <CustomButton onClick={onClose} variant="secondary">

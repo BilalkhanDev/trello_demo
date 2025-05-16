@@ -2,14 +2,21 @@ import React, { useState } from 'react';
 import styles from './Layout.module.css';
 import Footer from '../footer/Footer';
 import Navbar from '../navBar/NavBar';
-import Sidebar from '../sideBar/Sidebar';
+import Sidebar from '../sidebar/Sidebar';
 import useBoardSocketListeners from '../../hooks/useBoardSocketListeners';
+import useTicketSocketListeners from '../../hooks/useTicketSocketListener';
+import { useSelector } from 'react-redux';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-    useBoardSocketListeners();
+  const user = useSelector((state) => state.user.user);
+  useBoardSocketListeners();
+  useTicketSocketListeners();
+
+
   return (
     <>
+     
       <Navbar />
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div

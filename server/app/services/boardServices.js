@@ -1,17 +1,18 @@
-const { 
-    createBoardDAL,
-    updateBoardDAL,
-    deleteBoardWithTicketsDAL, 
-    getSingleBoardDAL,
-    getAllBoardsDAL, 
-    getSpecificUserBoardDAL} = require('../dal/boardDal');
+const { mongoose } = require('mongoose');
+const {
+  createBoardDAL,
+  updateBoardDAL,
+  deleteBoardWithTicketsDAL,
+  getSingleBoardDAL,
+  getAllBoardsDAL,
+  getSpecificUserBoardDAL } = require('../dal/boardDal');
 const Board = require('../model/boardModel');
 const Ticket = require('../model/ticketModel');
-const User =require('../model/userModel')
+const User = require('../model/userModel')
 const createBoardService = async (req) => {
-     const userId = req.user?._id; 
-     const boardData = req.body;
-     return await createBoardDAL({ ...boardData, createdBy: userId });
+  const userId = req.user?._id;
+  const boardData = req.body;
+  return await createBoardDAL({ ...boardData, createdBy: userId });
 };
 // uopdate board 
 const updateBoardService = async (req) => {
@@ -25,7 +26,7 @@ const updateBoardService = async (req) => {
   let validMemberIds = existingBoard.members;
   if (data.hasOwnProperty('members')) {
     if (Array.isArray(data.members) && data.members.length > 0) {
-        console.log("exist", data.members)
+      console.log("exist", data.members)
       const existingUsers = await User.find({ _id: { $in: data.members } }).select('_id');
       console.log("exist", existingUsers)
       validMemberIds = existingUsers.map(user => user._id);
@@ -55,7 +56,7 @@ const updateBoardService = async (req) => {
     tickets: validTicketIds
   };
 
-  
+
   const updatedBoard = await updateBoardDAL(boardId, updatePayload);
   if (Array.isArray(data.ticketComments)) {
     for (const { ticketId, commentText, commentedBy } of data.ticketComments) {
@@ -83,7 +84,6 @@ const updateBoardService = async (req) => {
 
 const deleteBoardService = async (req) => {
   const boardId = req.params.id;
-
   const session = await mongoose.startSession();
   session.startTransaction();
 

@@ -23,7 +23,7 @@ router.put('/update/:id',
     
 );
 // delete board 
-router.put('/delete/:id',
+router.delete('/delete/:id',
     useAuth,
     adminOnly(1),
     reqValidator("singleBoardschema","params"),
@@ -34,6 +34,8 @@ router.get('/all',
      useAuth,  
      reqValidator("userSchema", "query"),
      getAllBoards);
+
+
 router.get('/specific-user',
      useAuth,  
      reqValidator("userSchema", "query"),

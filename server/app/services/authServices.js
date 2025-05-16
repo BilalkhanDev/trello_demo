@@ -1,9 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { createUser, findUser } = require('../dal/authDal'); 
+const { createUser, findUser } = require('../dal/authDal');
 
 const createNewUser = async (req) => {
-    const{email,password,username}=req
+  const { email, password, username } = req
   // Check if the user already exists
   const existingUser = await findUser(email);
   if (existingUser) {
@@ -17,6 +17,9 @@ const createNewUser = async (req) => {
   return await createUser(username, email, hashedPassword);
 };
 
+
+const refreshTokensStore = new Set(); // Simple in-memory store (for demo only)
+
 const authenticateUser = async (email, password) => {
   const user = await findUser(email);
 
@@ -24,31 +27,31 @@ const authenticateUser = async (email, password) => {
     throw new Error('Invalid credentials');
   }
 
-  console.log('Stored password hash:', user.password); // For debugging
-
-  // Check if the password is correctly hashed
-  if (!user.password) {
-    throw new Error('Password is not set for this user');
-  }
-
-  // Compare the input password with the stored hashed password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
     throw new Error('Invalid credentials');
   }
 
-  // Generate a JWT token
-  const token = jwt.sign(
+  // Generate Access Token (short-lived)
+  const accessToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
 
-  return token;
+
+  const refreshToken = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.REFRESH_TOKEN_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { accessToken, refreshToken };
 };
 
 
 module.exports = {
   createNewUser,
   authenticateUser,
+  refreshTokensStore
 };

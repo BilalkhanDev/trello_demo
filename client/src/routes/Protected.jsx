@@ -1,13 +1,13 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import LayoutSkeleton from '../components/loader/layoutSkelton';
 
 const Protected = () => {
   const { isAuthenticated, loading } = useAuth();
 
-  // Wait until the authentication check is complete
   if (loading) {
-    return <div>Loading...</div>; // You can replace this with a loading spinner or other UI
+    return <LayoutSkeleton/>; 
   }
 
   return !isAuthenticated ? <Navigate to="/login" replace /> : <Outlet />;

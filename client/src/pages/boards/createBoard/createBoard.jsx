@@ -17,7 +17,6 @@ const validationSchema = Yup.object({
 });
 
 const BoardForm = ({ onClose, onSubmit, initialData = {} }) => {
-  console.log(initialData)
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
   const users = useSelector((state) => state.user?.allUsers || []);

@@ -18,7 +18,7 @@ const Dashboard = ({ stats = {} }) => {
   return (
     <Layout>
       <div>
-        <Header title={user?.username}/>
+        <Header title={user?.username} />
 
         <div className={styles.statsSection}>
           <Row gutter={[24, 24]} justify="center">
@@ -37,15 +37,15 @@ const Dashboard = ({ stats = {} }) => {
                 <Text className={styles.statNumber}>{totalTickets}</Text>
               </div>
             </Col>
-             {user && user?.role == 1 &&
-             <Col xs={24} sm={12} md={8}>
-              <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #84fab0, #8fd3f4)' }}>
-                <UserOutlined className={styles.icon} />
-                <Title level={4} className={styles.statTitle}>Users</Title>
-                <Text className={styles.statNumber}>{totalUsers}</Text>
-              </div>
-            </Col>}
-            
+            {user && user?.role == 1 &&
+              <Col xs={24} sm={12} md={8}>
+                <div className={styles.statCard} style={{ background: 'linear-gradient(135deg, #84fab0, #8fd3f4)' }}>
+                  <UserOutlined className={styles.icon} />
+                  <Title level={4} className={styles.statTitle}>Users</Title>
+                  <Text className={styles.statNumber}>{totalUsers}</Text>
+                </div>
+              </Col>}
+
           </Row>
 
         </div>

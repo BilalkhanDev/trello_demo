@@ -233,12 +233,11 @@ import { toast } from 'react-toastify';
 import { updateTicketByUser, updateTicketOrder } from '../../../services/ticketServices';
 import { updateTicket } from '../../../store/slices/ticketSlice';
 import { useDispatch } from 'react-redux';
-import useTicketSocketListeners from '../../../hooks/useTicketSocketListener';
 
 const { statusMap, colorMap } = Constant();
 
 const BoardPage = (props) => {
-  useTicketSocketListeners()
+  
   const [tickets, setTickets] = useState([]);
   const dispatch = useDispatch();
 

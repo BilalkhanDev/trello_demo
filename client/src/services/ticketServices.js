@@ -32,7 +32,6 @@ export const updateTickets=async(Id,data)=>{
  try{
    const response=await api.put(`/ticket/update/${Id}`,data)
     return response.data;
-  
  }
  catch(err){
     console.log("Tickets Error", err)

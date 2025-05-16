@@ -62,10 +62,8 @@ export const createBoard = async (data) => {
     }
   }
 };
+
 /// Update Boarsd 
-
-
-
 export const updateBoard = async (id,data) => {
   try {
     const response = await api.put(`board/update/${id}`,data);
@@ -83,6 +81,26 @@ export const updateBoard = async (id,data) => {
       }
     } else {
        throw new Error('Failed To Fetch Board');
+    }
+  }
+};
+export const deleteBoard = async (id) => {
+  try {
+    const response = await api.delete(`board/delete/${id}`);
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      const errors = error.response.data.error;
+
+      if (Array.isArray(errors)) {
+        errors.forEach((err) => {
+         throw new Error(err);  
+        });
+      } else {
+      throw new Error(errors || 'Failed to Delete Boards');
+      }
+    } else {
+       throw new Error('Failed To Delete Board');
     }
   }
 };

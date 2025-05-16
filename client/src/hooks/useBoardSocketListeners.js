@@ -1,4 +1,3 @@
-// src/hooks/useBoardSocketListeners.js
 import { useEffect } from "react";
 import socket from "../hooks/socket";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,32 +26,42 @@ const useBoardSocketListeners = () => {
     registerUser();
     socket.on("connect", registerUser); // Re-register after reconnect
 
-    // 📥 Handle new board assignment
+    // 📥 New board assignment
     const handleNewBoard = async ({ boardId }) => {
-      console.log("📥 New board assigned:", boardId);
-      const boards = await fetchUserBoard();
+      const boards =fetchUserBoard();
       dispatch(setBoard(boards?.boards));
       toast.success("You were added to a board!");
     };
 
-    // ❌ Handle removal from board
+    // ❌ Removed from board
     const handleRemovedFromBoard = async ({ boardId, message }) => {
-      console.log("❌ Removed from board:", boardId, message);
-      const boards = await fetchUserBoard();
+      const boards =  fetchUserBoard();
       dispatch(setBoard(boards?.boards));
-      toast.warn("You were removed from a board.");
+      toast.warn(message || "You were removed from a board.");
     };
 
+    // 🗑️ Board deleted
+    const handleBoardDeleted = async ({ boardId, message }) => {
+      const boards =  fetchUserBoard();
+      dispatch(setBoard(boards?.boards));
+      toast.error(message || "A board you were assigned to has been deleted.");
+    };
+
+    // 🧠 Set up listeners
     socket.on("newBoard", handleNewBoard);
     socket.on("removedFromBoard", handleRemovedFromBoard);
+    socket.on("boardDeleted", handleBoardDeleted);
 
-    // 🧹 Clean up listeners on unmount
+    // 🧹 Clean up
     return () => {
       socket.off("connect", registerUser);
       socket.off("newBoard", handleNewBoard);
       socket.off("removedFromBoard", handleRemovedFromBoard);
+      socket.off("boardDeleted", handleBoardDeleted);
     };
   }, [user?._id, dispatch]);
+
+  return null; // Since this is a hook, it doesn't render anything
 };
 
 export default useBoardSocketListeners;
