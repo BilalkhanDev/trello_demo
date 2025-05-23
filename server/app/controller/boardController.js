@@ -4,7 +4,8 @@ const {
   deleteBoardService,
   getAllBoardsService,
   getSingleBoardService,
-  getSpecificUserBoardsService } = require('../services/boardServices');
+  getSpecificUserBoardsService, 
+  getUsersByBoardIdService} = require('../services/boardServices');
 const { getIO, getConnectedUsers } = require("../config/sockets");
 const boardModel = require('../model/boardModel');
 const createBoard = async (req, res) => {
@@ -151,6 +152,15 @@ const getSpecficUserBoard = async (req, res) => {
   }
 };
 
+const getUsersByBoardId = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const users = await getUsersByBoardIdService(boardId);
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 
 
@@ -160,5 +170,6 @@ module.exports = {
   deleteBoard,
   getAllBoards,
   getBoardById,
-  getSpecficUserBoard
+  getSpecficUserBoard,
+  getUsersByBoardId
 };

@@ -1,6 +1,7 @@
 const Board = require('../model/boardModel');
 const Ticket =require("../model/ticketModel")
-const mongoose=require("mongoose")
+const mongoose=require("mongoose");
+const User = require('../model/userModel');
 const createBoardDAL = async (data) => {
   const newBoard = new Board(data);
   return await newBoard.save();
@@ -31,7 +32,7 @@ const getAllBoardsDAL = async (page, limit) => {
 
   const boards = await Board.find()
     .populate('createdBy', 'username email')
-    .populate('members', '_id')
+    .populate('members', '_id username email')
     .populate({
       path: 'tickets',
       options: { sort: { order: 1 } },
@@ -91,7 +92,26 @@ const getSpecificUserBoardDAL = async (page, limit, userId) => {
 };
 
 
+const getUsersByBoardIdDAL = async (boardId) => {
+  const board = await Board.findById(boardId).lean();
 
+  if (!board) {
+    throw new Error('Board not found');
+  }
+
+  if (!board.members || board.members.length === 0) {
+    return []; // or return false if you prefer
+  }
+
+  const memberIds = board?.members?.map(m => new mongoose.Types.ObjectId(m));
+
+  const users = await User.find({
+    _id: { $in: memberIds },
+    role: 2,
+  }).select('_id username email');
+
+  return users;
+}
 
 
 const getSingleBoardDAL = async (id) => {
@@ -116,5 +136,6 @@ module.exports = {
   deleteBoardWithTicketsDAL,
   getAllBoardsDAL,
   getSingleBoardDAL,
-  getSpecificUserBoardDAL
+  getSpecificUserBoardDAL,
+  getUsersByBoardIdDAL
 };

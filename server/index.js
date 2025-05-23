@@ -10,7 +10,7 @@ const server = http.createServer(app);
 const {createAdminUser}=require('./app/seeder/admin')
 const { initSocket } = require("./app/config/sockets");
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -19,7 +19,7 @@ if (process.env.NODE_ENV === 'development') {
   morgan.token('id', (req) => req.id || 'no-id');
   app.use(morgan(':method :url :status :response-time ms - :id'));
 }
-
+app.get('/', (req,res)=>{res.send("Connected")});
 app.use('/api', routes);
 
 app.use((err, req, res, next) => {

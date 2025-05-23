@@ -5,7 +5,8 @@ const {
   deleteBoardWithTicketsDAL,
   getSingleBoardDAL,
   getAllBoardsDAL,
-  getSpecificUserBoardDAL } = require('../dal/boardDal');
+  getSpecificUserBoardDAL, 
+  getUsersByBoardIdDAL} = require('../dal/boardDal');
 const Board = require('../model/boardModel');
 const Ticket = require('../model/ticketModel');
 const User = require('../model/userModel')
@@ -116,12 +117,16 @@ const getSpecificUserBoardsService = async (req) => {
 const getSingleBoardService = async (id) => {
   return await getSingleBoardDAL(id);
 };
-
+// get user list in specfic board 
+const getUsersByBoardIdService = async (boardId) => {
+  return await getUsersByBoardIdDAL(boardId);
+};
 module.exports = {
   createBoardService,
   updateBoardService,
   deleteBoardService,
   getAllBoardsService,
   getSingleBoardService,
+  getUsersByBoardIdService,
   getSpecificUserBoardsService
 };

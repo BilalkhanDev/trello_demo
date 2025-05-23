@@ -4,21 +4,16 @@ const { createUser, findUser } = require('../dal/authDal');
 
 const createNewUser = async (req) => {
   const { email, password, username } = req
-  // Check if the user already exists
   const existingUser = await findUser(email);
   if (existingUser) {
     throw new Error('User already exists');
   }
-
-  // Hash the password before saving it
   const hashedPassword = await bcrypt.hash(password, 10);
-
-  // Create the user and save to the DB
   return await createUser(username, email, hashedPassword);
 };
 
 
-const refreshTokensStore = new Set(); // Simple in-memory store (for demo only)
+const refreshTokensStore = new Set(); 
 
 const authenticateUser = async (email, password) => {
   const user = await findUser(email);
@@ -31,14 +26,11 @@ const authenticateUser = async (email, password) => {
   if (!isMatch) {
     throw new Error('Invalid credentials');
   }
-
-  // Generate Access Token (short-lived)
   const accessToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
-
 
   const refreshToken = jwt.sign(
     { id: user._id, role: user.role },

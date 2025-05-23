@@ -32,10 +32,6 @@ const refreshAccessToken = (req, res) => {
   // Log token for debugging
   console.log("↩️ Received refresh token:", refreshToken);
 
-  if (!refreshTokensStore.has(refreshToken)) {
-    console.log("❌ Token not in store");
-    return res.status(401).json({ error: 'Invalid refresh token' });
-  }
 
   try {
     const payload = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);

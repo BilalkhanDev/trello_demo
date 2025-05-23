@@ -18,7 +18,7 @@ exports.createTicket = async (req, res) => {
     if (ticket?.assignedTo) {
       const assignedToId = ticket.assignedTo?._id?.toString(); // Ensure it's string
       const userSocket = connectedUsers[assignedToId];
-
+       console.log("userSocket", userSocket)
       if (userSocket?.socketId) {
         io.to(userSocket.socketId).emit("ticketAssigned", {
           message: "A new ticket has been assigned to you",
@@ -43,9 +43,12 @@ exports.updateTicket = async (req, res) => {
     const user = req.user;
     const ticketId = req.params.id;
     if (Array.isArray(req.body)) {
-      await Promise.all(req.body.map(ticket =>
-        ticketModel.findByIdAndUpdate(ticket.id, { order: ticket.order })
-      ));
+      await Promise.all(
+        req.body.map(ticket =>
+          ticketModel.findByIdAndUpdate(ticket._id, { order: ticket.order }, { new: true })
+        )
+      );
+
       return res.status(200).json({ message: "Order updated" });
     }
 
@@ -64,19 +67,22 @@ exports.updateTicket = async (req, res) => {
 
     const io = getIO();
     const connectedUsers = getConnectedUsers();
-
-    // ✅ Admin logic for assignedTo + status
     if (user?.role === 1) {
+       
       if (newAssignedTo !== oldAssignedTo) {
         const newSocket = connectedUsers[newAssignedTo]?.socketId;
         const oldSocket = connectedUsers[oldAssignedTo]?.socketId;
 
         if (newSocket) {
+          console.log("Socket")
           io.to(newSocket).emit("ticketAssigned", {
             ticketId,
             message: "You have been assigned a new ticket.",
             ticket: updated
-          });
+          },
+            (response) => {
+              console.log('Acknowledgement from client:1');
+            })
         }
 
         if (oldSocket) {
@@ -84,7 +90,10 @@ exports.updateTicket = async (req, res) => {
             ticketId,
             message: "You have been unassigned from a ticket.",
             ticket: updated
-          });
+          },
+            (response) => {
+              console.log('Acknowledgement from client:2');
+            });
         }
       }
 
@@ -95,7 +104,10 @@ exports.updateTicket = async (req, res) => {
             ticketId,
             newStatus: updatedTicket.status,
             ticket: updated
-          });
+          },
+            (response) => {
+              console.log('Acknowledgement from client:3');
+            });
         }
       }
     }
@@ -103,6 +115,7 @@ exports.updateTicket = async (req, res) => {
     // ✅ User logic — only emit status updates
     if (user?.role !== 1 && updatedTicket.status !== oldStatus) {
       const assignedSocket = connectedUsers[newAssignedTo]?.socketId;
+         console.log("Socket****",assignedSocket)
       if (assignedSocket) {
         io.to(assignedSocket).emit("ticketStatusUpdated", {
           ticketId,

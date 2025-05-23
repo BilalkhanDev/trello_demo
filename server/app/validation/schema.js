@@ -116,7 +116,7 @@ const userSchema = Joi.object({
     Joi.string().custom(objectId).messages({
       'string.base': 'Each member ID must be a valid string'
     })
-  ),
+  ).optional(),
    tickets: Joi.array().items(
     Joi.string().custom(objectId).messages({
       'string.base': 'Each ticket ID must be a valid string'
@@ -209,7 +209,13 @@ const updateTicketStatus=Joi.object({
   board: Joi.forbidden(),
   assignedTo: Joi.forbidden()
 });
-
+const boardUsersSchema=Joi.object({
+   boardId: Joi.string().required().messages({
+    'string.base': 'Board ID must be a string',
+    'string.empty': 'Board ID is required',
+    'any.required': 'Board ID is required'
+  })
+})
 module.exports = { 
   registerSchema, 
   loginSchema ,
@@ -221,6 +227,7 @@ module.exports = {
   createTicketParamSchema,
   getTicketsSchema,
   updateTicketStatus,
-  updateTicketsSchema
+  updateTicketsSchema,
+  boardUsersSchema
 
 };

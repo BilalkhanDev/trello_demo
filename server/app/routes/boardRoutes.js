@@ -1,7 +1,7 @@
 const express = require('express');
 const reqValidator = require('../midlwares/validator');
 const { useAuth, adminOnly, adminOrSelf } = require('../midlwares/useAuth');
-const { createBoard, updateBoard, deleteBoard, getAllBoards, getBoardById, getSpecficUserBoard } = require('../controller/boardController');
+const { createBoard, updateBoard, deleteBoard, getAllBoards, getBoardById, getSpecficUserBoard, getUsersByBoardId } = require('../controller/boardController');
 
 
 const router = express.Router();
@@ -42,7 +42,13 @@ router.get('/specific-user',
      getSpecficUserBoard)
 
 router.get('/:id', useAuth, getBoardById)
+// get users in the specfic board 
 
+router.get('/user-list/:boardId',
+     useAuth,  
+     adminOnly(1),
+     reqValidator("boardUsersSchema", "params"),
+     getUsersByBoardId)
 
 
 
