@@ -16,6 +16,7 @@ exports.createTicket = async (req, res) => {
     const connectedUsers = getConnectedUsers();
 
     if (ticket?.assignedTo) {
+      console.log("toicket ", ticket?.assignedTo)
       const assignedToId = ticket.assignedTo?._id?.toString(); // Ensure it's string
       const userSocket = connectedUsers[assignedToId];
        console.log("userSocket", userSocket)

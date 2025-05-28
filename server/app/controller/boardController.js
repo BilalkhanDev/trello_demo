@@ -4,10 +4,12 @@ const {
   deleteBoardService,
   getAllBoardsService,
   getSingleBoardService,
-  getSpecificUserBoardsService, 
-  getUsersByBoardIdService} = require('../services/boardServices');
+  getSpecificUserBoardsService,
+  getUsersByBoardIdService } = require('../services/boardServices');
 const { getIO, getConnectedUsers } = require("../config/sockets");
 const boardModel = require('../model/boardModel');
+const ticketModel = require('../model/ticketModel');
+const { default: mongoose } = require('mongoose');
 const createBoard = async (req, res) => {
   try {
     const newBoard = await createBoardService(req);
@@ -34,6 +36,56 @@ const createBoard = async (req, res) => {
   }
 };
 
+// const updateBoard = async (req, res) => {
+//   try {
+//     const boardId = req.params.id;
+
+//     const existingBoard = await boardModel.findById(boardId).lean();
+//     if (!existingBoard) throw new Error("Board not found");
+
+//     const oldMembers = existingBoard?.members?.map(id => id.toString());
+//     const updatedBoard = await updateBoardService(req);
+//     const newMembers = updatedBoard?.members?.map(id => id.toString());
+
+//     const io = getIO();
+//     const connectedUsers = getConnectedUsers();
+
+//     // Identify added members
+//     const addedMembers = newMembers?.filter(id => !oldMembers?.includes(id));
+//     // Identify removed members
+//     const removedMembers = oldMembers?.filter(id => !newMembers?.includes(id));
+
+//     // Emit to newly added members
+//     addedMembers?.forEach(userId => {
+//       const userSocket = connectedUsers[userId];
+//       if (userSocket && userSocket.socketId) {
+//         io.to(userSocket.socketId).emit("newBoard", {
+//           message: "You were added to a board",
+//           boardId: updatedBoard._id,
+//         });
+//       }
+//     });
+
+//     // Emit to removed members
+//     removedMembers?.forEach(userId => {
+//       const userSocket = connectedUsers[userId];
+//       if (userSocket && userSocket.socketId) {
+//         io.to(userSocket.socketId).emit("removedFromBoard", {
+//           message: "You were removed from a board",
+//           boardId: updatedBoard._id,
+//         });
+//       }
+//     });
+
+//     res.status(200).json({ message: "Board updated successfully", board: updatedBoard });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
+// Make sure this is the correct path
+
 const updateBoard = async (req, res) => {
   try {
     const boardId = req.params.id;
@@ -42,18 +94,33 @@ const updateBoard = async (req, res) => {
     if (!existingBoard) throw new Error("Board not found");
 
     const oldMembers = existingBoard?.members?.map(id => id.toString());
+
+    // Update board and get new members
     const updatedBoard = await updateBoardService(req);
     const newMembers = updatedBoard?.members?.map(id => id.toString());
 
+    // 🔍 Determine removed members
+    const removedMembers = oldMembers?.filter(id => !newMembers?.includes(id));
+    console.log("removedMembers:", removedMembers);
+
+    // 🧹 Unassign tickets for removed members
+    if (removedMembers && removedMembers.length > 0) {
+      await ticketModel.updateMany(
+        {
+          board: boardId,
+          assignedTo: { $in: removedMembers.map(id => new mongoose.Types.ObjectId(id)) }
+        },
+        { $set: { assignedTo: null } } // ✅ Properly unassign
+      );
+    }
+
+    // 🔔 Notify added and removed members via socket
     const io = getIO();
     const connectedUsers = getConnectedUsers();
 
-    // Identify added members
     const addedMembers = newMembers?.filter(id => !oldMembers?.includes(id));
-    // Identify removed members
-    const removedMembers = oldMembers?.filter(id => !newMembers?.includes(id));
 
-    // Emit to newly added members
+    // Notify added members
     addedMembers?.forEach(userId => {
       const userSocket = connectedUsers[userId];
       if (userSocket && userSocket.socketId) {
@@ -64,7 +131,7 @@ const updateBoard = async (req, res) => {
       }
     });
 
-    // Emit to removed members
+    // Notify removed members
     removedMembers?.forEach(userId => {
       const userSocket = connectedUsers[userId];
       if (userSocket && userSocket.socketId) {
@@ -75,14 +142,19 @@ const updateBoard = async (req, res) => {
       }
     });
 
-    res.status(200).json({ message: "Board updated successfully", board: updatedBoard });
+    // ✅ Success response
+    res.status(200).json({
+      message: "Board updated successfully",
+      board: updatedBoard
+    });
+
   } catch (error) {
-    console.log(error);
+    console.error("Error updating board:", error);
     res.status(400).json({ error: error.message });
   }
 };
 
- // Make sure this is the correct path
+
 const deleteBoard = async (req, res) => {
   try {
     const boardId = req.params.id;
