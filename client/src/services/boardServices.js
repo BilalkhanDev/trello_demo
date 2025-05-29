@@ -104,3 +104,23 @@ export const deleteBoard = async (id) => {
     }
   }
 };
+export const fetchboardUser=async(boardId)=>{
+    try {
+    const response = await api.get(`/board/user-list/${boardId}`);
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.data) {
+      const errors = error.response.data.error;
+
+      if (Array.isArray(errors)) {
+        errors.forEach((err) => {
+         throw new Error(err);  
+        });
+      } else {
+      throw new Error(errors || 'Failed to Fetch Boards');
+      }
+    } else {
+       throw new Error('Failed To Fetch Board');
+    }
+  }
+}

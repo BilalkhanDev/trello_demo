@@ -33,32 +33,28 @@ const statusOptions = [
   { label: 'Completed', value: 2 },
 ];
 
-const TicketForm = ({ onClose, onSubmit, initialData = {} }) => {
-  const user = useSelector((state) => state.user.user);
-  const dispatch = useDispatch()
-  const fetchAllUser = async () => {
-    const response = await fetchUsers()
-    if (response) {
-      console.log(response)
-      dispatch(setAllUser(response?.users))
-    }
-  }
-  useEffect(() => {
-    if (user && user?.role == 1) {
-      fetchAllUser()
-    }
-  }, [])
-  const users = useSelector((state) => state.user?.allUsers || []);
+const TicketForm = ({ onClose, onSubmit, initialData = {}, userOptions }) => {
+
   const [assignedOptions, setAssignedOptions] = useState([]);
+  console.log("UserOptions",userOptions)
   useEffect(() => {
-    if (users?.length) {
-      const formatted = users?.map((user) => ({
+   
+    if (userOptions && userOptions?.length >0) {
+      const formatted = userOptions?.map((user) => ({
         label: user?.email,
         value: user?._id,
+        id: user?._id
       }));
       setAssignedOptions(formatted);
+    } else {
+      const foramated =[{
+        label: "Please add members to assign tickets",
+        value: ""
+      }]
+      setAssignedOptions(foramated);
+
     }
-  }, [users]);
+  }, [userOptions]);
 
   return (
     <Formik

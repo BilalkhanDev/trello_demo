@@ -14,33 +14,41 @@ import { Constant } from "../../../constants";
 import CustomModal from "../../../common/modal/Modal";
 import TicketForm from "../../tickets/createTicket/createTicket";
 import BoardForm from "../createBoard/createBoard";
-import { deleteBoard, fetchBoard, updateBoard } from "../../../services/boardServices";
-import { addBoard } from "../../../store/slices/boardSlice";
+import { deleteBoard, fetchBoard, fetchboardUser, updateBoard } from "../../../services/boardServices";
+import { addBoard, setBoardUser } from "../../../store/slices/boardSlice";
 
 const AdminBoard = (props) => {
- 
+
   const { status, priority } = Constant();
   const { boardId } = useParams()
   const dispatch = useDispatch();
   const [open, setOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  const [isboardOpen, setIsBoardOpen] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const tickets = useSelector((state) => state.tickets?.tickets || []);
   const allUsers = useSelector((state) => state.user.allUsers || []);
   const user = useSelector((state) => state.user.user);
-  const [isboardOpen, setIsBoardOpen] = useState(false);
+  const boardUsers = useSelector((state) => state.boards.boardUsers || [])
+  useEffect(() => {
+    const fetchUserBoard = async () => {
+      setIsLoadingUsers(true);
+      dispatch(setBoardUser([]));
+      const resp = await fetchboardUser(boardId);
+      dispatch(setBoardUser(resp));
+      setIsLoadingUsers(false);
+    };
+    fetchUserBoard();
+  }, [boardId]);
 
   const handleEditClick = () => {
     setIsBoardOpen(true);
   };
 
-  const handleModalClose = () => {
-    setIsBoardOpen(true);
-  };
 
   const handleFormSubmit = async (data) => {
-    const assignedUser = allUsers.find(user => user._id == data.assignedTo);
     try {
-      if (data.id) {
+      if (data.id || data?._id) {
         const payload = {
           title: data?.title,
           description: data?.description,
@@ -48,17 +56,10 @@ const AdminBoard = (props) => {
           assignedTo: data?.assignedTo,
           priority: data?.priority,
         }
-        await updateTickets(data.id, payload);
-        const updatePayload = {
-          _id: data?.id,
-          title: data?.title,
-          description: data?.description,
-          status: data?.status,
-          assignedTo: assignedUser,
-          priority: data?.priority,
-        }
-        console.log(updatePayload)
-        dispatch(updateTicket(updatePayload))
+        await updateTickets(data.id || data?._id, payload);
+        const resp = await fetchTickets(props?.boardId || boardId)
+        dispatch(setTicket(resp))
+
         toast.success('Ticket updated!');
       } else {
         const resp = await createTicket(props?.boardId || boardId, data);
@@ -70,21 +71,44 @@ const AdminBoard = (props) => {
       toast.error(error?.message || 'Error submitting ticket');
     }
   };
-  const handleBoardSubmit = async (data) => {
-    try {
-      const resp = await updateBoard(props?.boardId || boardId, data);
-      await props.fetchBoards()
-      dispatch(addBoard(resp))
-
-      toast.success('Board updated!');
-
-    } catch (error) {
-      toast.error(error?.message || 'Error updating board');
+const handleBoardSubmit = async (data) => {
+  try {
+    // Get current member IDs from props
+    const currentMemberIds = props?.boardData?.members?.map(item => item?._id) || [];
+    
+    // Get new member IDs from form data
+    const newMemberIds = data?.members?.map(item => item) || [];
+    
+    // Helper function to compare arrays
+    const arraysEqual = (a, b) => {
+      if (a.length !== b.length) return false;
+      const sortedA = [...a].sort();
+      const sortedB = [...b].sort();
+      return sortedA.every((val, index) => val === sortedB[index]);
+    };
+    
+    // Check if members changed
+    const membersChanged = !arraysEqual(currentMemberIds, newMemberIds);
+    
+   
+    
+    // Update the board
+    const resp = await updateBoard(props?.boardId || boardId, data);
+    await props.fetchBoards();
+    dispatch(addBoard(resp));
+     if (membersChanged) {
+      const userResp = await fetchboardUser(props?.boardId || boardId);
+      dispatch(setBoardUser(userResp));
     }
-  };
+
+    toast.success('Board updated!');
+
+  } catch (error) {
+    toast.error(error?.message || 'Error updating board');
+  }
+};
 
   const handleEdit = (ticket) => {
-    console.log(ticket)
     setSelectedTicket(ticket);
     setOpen(true);
   };
@@ -157,16 +181,16 @@ const AdminBoard = (props) => {
       ),
     },
   ];
-  const handleDeleteBoard=async()=>{
-    try{
-    const resp= await deleteBoard(boardId)
-     if(resp){
-     const updatedData= await props.fetchBoards()
-      dispatch(addBoard(updatedData?.boards))
-      toast.success("Board Deleted")
-     }
+  const handleDeleteBoard = async () => {
+    try {
+      const resp = await deleteBoard(boardId)
+      if (resp) {
+        const updatedData = await props.fetchBoards()
+        dispatch(addBoard(updatedData?.boards))
+        toast.success("Board Deleted")
+      }
     }
-    catch(err){
+    catch (err) {
       toast.error(err?.message || "Failed to delete")
     }
 
@@ -206,7 +230,7 @@ const AdminBoard = (props) => {
 
       {/* Ticket Modal */}
       <CustomModal
-        visible={open}
+        visible={open && !isLoadingUsers}
         onClose={() => {
           setOpen(false);
           setSelectedTicket(null);
@@ -215,6 +239,7 @@ const AdminBoard = (props) => {
       >
         <TicketForm
           initialData={selectedTicket}
+          userOptions={boardUsers}
           onClose={() => {
             setOpen(false);
             setSelectedTicket(null);
@@ -246,11 +271,11 @@ const AdminBoard = (props) => {
           cancelText="Cancel"
           placement="top"
         >
-          
-            <button className={styles.floatingDeleteButton}>
-              <DeleteOutlined />
-            </button>
-       
+
+          <button className={styles.floatingDeleteButton}>
+            <DeleteOutlined />
+          </button>
+
         </Popconfirm>
       )}
 

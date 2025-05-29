@@ -27,26 +27,56 @@ const useBoardSocketListeners = () => {
     socket.on("connect", registerUser); // Re-register after reconnect
 
     // 📥 New board assignment
-    const handleNewBoard = async ({ boardId }) => {
-      const boards =fetchUserBoard();
+    const handleNewBoard = async () => {
+      const boards = await fetchUserBoard();
+      console.log("Borads1", boards)
       dispatch(setBoard(boards?.boards));
       toast.success("You were added to a board!");
     };
 
     // ❌ Removed from board
-    const handleRemovedFromBoard = async ({ boardId, message }) => {
-      const boards =  fetchUserBoard();
+    const handleRemovedFromBoard = async ({ message }) => {
+      const boards = await fetchUserBoard();
+      console.log("Boards2", boards);
       dispatch(setBoard(boards?.boards));
+
+      const currentUrl = window.location.pathname;
+      const boardIdMatch = currentUrl.match(/\/boards\/([a-f\d]{24})/); 
+      if (boardIdMatch) {
+        const currentBoardId = boardIdMatch[1];
+
+        const boardExists = boards?.boards?.some(board => board?._id === currentBoardId || board?.id === currentBoardId);
+
+        if (!boardExists) {
+          window.location.href = '/dashboard'; // or use your router's navigation method
+        }
+      }
+
       toast.warn(message || "You were removed from a board.");
     };
 
     // 🗑️ Board deleted
-    const handleBoardDeleted = async ({ boardId, message }) => {
-      const boards =  fetchUserBoard();
+    const handleBoardDeleted = async ({ message }) => {
+      const boards = await fetchUserBoard();
+      console.log("Boards3", boards);
       dispatch(setBoard(boards?.boards));
+
+      // Get current URL and extract boardId
+      const currentUrl = window.location.pathname;
+      const boardIdMatch = currentUrl.match(/\/boards\/([a-f\d]{24})/);
+
+      if (boardIdMatch) {
+        const currentBoardId = boardIdMatch[1];
+
+        const boardExists = boards?.boards?.some(board => board?._id === currentBoardId || board.id === currentBoardId);
+
+        if (!boardExists) {
+          window.location.href = '/dashboard';
+        }
+      }
+
       toast.error(message || "A board you were assigned to has been deleted.");
     };
-
     // 🧠 Set up listeners
     socket.on("newBoard", handleNewBoard);
     socket.on("removedFromBoard", handleRemovedFromBoard);

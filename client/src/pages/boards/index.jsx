@@ -7,7 +7,7 @@ import { fetchTickets } from "../../services/ticketServices";
 import { toast } from "react-toastify";
 import { setTicket } from "../../store/slices/ticketSlice";
 import { fetchBoard, fetchUserBoard } from "../../services/boardServices";
-import { setBoard } from "../../store/slices/boardSlice";
+import { setBoard, setBoardUser } from "../../store/slices/boardSlice";
 import { useRef } from "react";
 
 const Board = () => {
@@ -20,32 +20,19 @@ const Board = () => {
   const [BoardData, setBoardData] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const board = boards.find((b) => b?._id === boardId);
-  //   if (!board) {
-  //     navigate("/dashboard");
-  //   } else {
-  //     setBoardData(board);
-  //     setLoading(false);
-  //   }
-  // }, [boardId, boards, navigate]);
 
   const fetchTicket = async () => {
-    console.log("🎯 fetchTicket called");
     try {
       const tickets = await fetchTickets(boardId);
       if (tickets) {
-        console.log("✅ Tickets fetched:", tickets.length);
         dispatch(setTicket(tickets));
       }
     } catch (error) {
-      console.error("❌ Error in fetchTicket:", error);
       toast.error(error?.message || "Internal Server Error");
     }
   };
 
   const fetchAndSetBoards = async () => {
-    console.log("📦 fetchAndSetBoards called");
     try {
       let resp;
       if (user?.role === 1) {
@@ -55,7 +42,6 @@ const Board = () => {
       }
 
       if (resp?.boards) {
-        console.log("✅ Boards fetched:", resp.boards.length);
         dispatch(setBoard(resp.boards));
         const singleBoard = resp.boards.find((item) => item?._id === boardId);
         setBoardData(singleBoard || {});
