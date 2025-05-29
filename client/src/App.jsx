@@ -6,7 +6,7 @@ import SignUp from './auth/signup/SignUp';
 import Protected from './routes/Protected';
 import Dashboard from './pages/dashboard/Dashboard';
 import Board from './pages/boards';
-import AdminBoard from './pages/boards/adminBoard/AdminBoard';
+
 
 function App() {
   return (

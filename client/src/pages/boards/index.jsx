@@ -20,62 +20,15 @@ const Board = () => {
   const [BoardData, setBoardData] = useState({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const board = boards.find((b) => b?._id === boardId);
-    if (!board) {
-      navigate("/dashboard");
-    } else {
-      setBoardData(board);
-      setLoading(false);
-    }
-  }, [boardId, boards, navigate]);
-
-  //   const fetchTicket = async () => {
-  //     try {
-  //       const tickets = await fetchTickets(boardId);
-  //       if (tickets) {
-  //         dispatch(setTicket(tickets));
-  //       }
-  //     } catch (error) {
-  //       console.error(error, "ERROR on PAGE");
-  //       toast.error(error?.message || 'Internal Server Error');
-  //     }
-  //   };
-
-  //   const fetchAndSetBoards = async () => {
-  //     try {
-  //       let resp;
-  //       if (user?.role === 1) {
-  //         resp = await fetchBoard();
-  //       } else {
-  //         resp = await fetchUserBoard();
-  //       }
-
-  //       if (resp?.boards) {
-  //         dispatch(setBoard(resp.boards));
-  //         const singleBoard = resp.boards.find((item) => item?._id === boardId);
-  //         setBoardData(singleBoard || {});
-  //       }
-  //     } catch (error) {
-  //       toast.error("Failed to fetch boards");
-  //     }
-  //   };
-  //  const fetchBoardRef=useRef(true)
-  //   useEffect(() => {
-  //     if (!user?._id) return;
-
-  //      const fetchData = async () => {
-  //       fetchBoardRef.current=false
-  //       setLoading(true);
-  //       await fetchAndSetBoards();
-  //       await fetchTicket();
-  //       setLoading(false);
-  //     }
-  //       if(fetchBoardRef.current===true){
-  //         fetchData()
-  //       }
-
-  //   }, []);
+  // useEffect(() => {
+  //   const board = boards.find((b) => b?._id === boardId);
+  //   if (!board) {
+  //     navigate("/dashboard");
+  //   } else {
+  //     setBoardData(board);
+  //     setLoading(false);
+  //   }
+  // }, [boardId, boards, navigate]);
 
   const fetchTicket = async () => {
     console.log("🎯 fetchTicket called");
@@ -123,19 +76,19 @@ const Board = () => {
     }
 
     const fetchData = async () => {
-      fetchBoardRef.current = false;
+      // fetchBoardRef.current = false;
       setLoading(true);
       await fetchAndSetBoards();
       await fetchTicket();
       setLoading(false);
     };
 
-    if (fetchBoardRef.current === true) {
+    // if (fetchBoardRef.current === true) {
       fetchData();
-    } else {
-      console.log("🛑 fetchBoardRef.current is false, skipping fetch");
-    }
-  }, []); // Only runs once on mount
+    // } else {
+    //   console.log("🛑 fetchBoardRef.current is false, skipping fetch");
+    // }
+  }, [boardId]); // Only runs once on mount
 
 
 
